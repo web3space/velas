@@ -4,14 +4,15 @@ require! {
     \superagent : { post }
 }
 
+validate-tx = (tx, cb)->
+
 
 inform-peer = (db, tx, index, cb)->
     err, peer <- db.peers.get index
     return cb err if err?
-    err <- post "#{peer.address}/new-tx", { tx }
+    err <- post "#{peer.network-address}/new-tx", { tx }
     return cb err if err?
     cb null
-    
     
 
 inform-peers = (db, tx, quorum, [index, ...indexes], cb)->
