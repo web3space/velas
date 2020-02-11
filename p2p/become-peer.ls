@@ -19,7 +19,7 @@ try-connect-peer = (me, peer, cb)->
     err, res <- post peer, { method, params }
     return add-me-to-network me, res.body, cb if err? and err.body.error.message is 'There are not available slots, please get one of child peer' and typeof! res.body is \Array
     return cb err if err?
-    return cb res.body.error.message if res.body.error?
+    return cb res.body.error.message if res.body?error?
     score = \0
     { owner, add-me-signature } = res.body.result
     cb null, { network-address: peer, owner, score, add-me-signature }
