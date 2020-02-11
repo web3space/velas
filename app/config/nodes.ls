@@ -1,22 +1,30 @@
-module.exports =
-    *   port: 8001
-        ip: \168.235.109.92
-        account: \0x8b013f8444439b2481f6f8f52bb3e01f37371d22cd3fda7fefe13fe3605a6f54
-        stacker: yes
-        discovery-peers:
-            * \http://168.235.109.92:8002
-            * \http://168.235.109.92:8003
-    *   port: 8002
-        ip: \168.235.109.92
-        account: \0x2a1ddf57e0c9cb3da672f59b4223caba5e751329595fbe9d03989c053319bf3f
-        stacker: yes
-        discovery-peers: 
-            * \http://168.235.109.92:8001
-            * \http://168.235.109.92:8003
-    *   port: 8003
-        ip: \168.235.109.92
-        account: \0xaa9037ff29d07dc5937d008b4a28dca371ffa146304213a57afdaf0d53fd6140
-        stacker: yes
-        discovery-peers:
-            * \http://168.235.109.92:8002
-            * \http://168.235.109.92:8003
+require! {
+    \./generator.ls
+    \prelude-ls : { foldl, filter, each, map }
+}
+
+
+build-node = (collector, account)->
+        item =
+                port: 9000 + collector.length + 1
+                ip: \107.191.100.236
+                account: account
+                stacker: yes
+                discovery-peers: []
+        collector ++ [item]
+                
+
+nodes =
+        generator |> foldl build-node, []
+
+connect-nodes = (nodes)--> (node)->
+        other-nodes =
+                nodes |> filter (-> it isnt node)
+        node.discovery-peers =
+                other-nodes |> map (-> "http://#{it.ip}:#{it.port}")
+        
+
+connected-nodes =
+        nodes |> each connect-nodes nodes
+
+module.exports = connected-nodes

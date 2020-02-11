@@ -1,16 +1,22 @@
 require! {
-    \ganache-core
+    \../index.js : velas-blockchain
     \./config/nodes.ls
     \./config/genesis.ls
     \./trace.ls
-    \./tests/run-tests.ls
+    \./tests/run-realtime-tests.ls
+    \./tests/run-basic-tests.ls
 }
 
 cb = trace
 
+
+err <- run-basic-tests
+return cb err if err?
+
 start-node-one-by-one = (genesis, [config, ...configs], cb)->
     return cb null if not config?
-    server = ganache-core.server genesis
+    options = { ...genesis, ...config }
+    server = velas-blockchain.server options
     provider = server.provider
     err <- server.listen config.port
     return cb err if err?
@@ -25,7 +31,7 @@ return cb err if err?
 
 trace null, infos.join('\n')
 
-err <- run-tests genesis, nodes
+err <- run-realtime-tests genesis, nodes
 return cb err if err?
 cb null, \done
 

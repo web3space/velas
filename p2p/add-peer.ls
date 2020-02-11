@@ -1,18 +1,22 @@
 require! {
-    \./get-web3.ls 
     \./check-peer-balance.ls
     \./utils/wrong-string.ls
+    \./utils/recover-owner.ls
+    \./utils/get-web3.ls 
+    \./utils/recover-owner.ls
 }
 
 get-validated-peer = (me, peer, cb)->
     return cb "expected correct peer.network-address" if wrong-string peer.network-address, 50
-    return cb "expected correct peer.owner" if wrong-string peer.owner, 50
+    return cb "expected correct peer.owner got #{peer.owner}" if wrong-string peer.owner, 50
     return cb "expected correct peer.add-me-signature" if wrong-string peer.add-me-signature, 500
     
-    owner = my-web3(me).eth.accounts.recover("Velas peer request", peer.add-me-signature, no)
+    err, owner <- recover-owner me, "Velas peer request, My address is #{peer.network-address}", peer.add-me-signature
+    return cb err if err?
+    
     return cb "expected owner #{peer.owner}, got #{owner}" if owner isnt peer.owner
     
-    score = 0
+    score = \0
     
     cb null, { peer.network-address, peer.owner, score }
 
@@ -40,5 +44,9 @@ add-peer = (db, me, peer, cb)->
     return cb err if err?
     err <- db.peers.push peer
     return cb err if err?
-    cb null
+    web3 = get-web3 me
+    owner = web3.eth.accounts.wallet.0.address
+    network-address = "http://#{me.ip}:#{me.port}"
+    add-me-signature = web3.eth.accounts.sign("Velas peer request, My address is #{network-address}", me.account, no).signature
+    cb null, { owner, network-address, add-me-signature }
 module.exports = add-peer

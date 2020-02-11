@@ -3,7 +3,7 @@ require! {
 }
 
 module.exports = (node)->
-    web3 = new Web3("http://localhost:#{node.port}")
+    web3 = new Web3("http://#{node.ip}:#{node.port}")
     
     account = web3.eth.accounts.privateKeyToAccount(node.account)
     
