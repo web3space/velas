@@ -1,5 +1,5 @@
 require! {
-    \superagent : { post }
+    \./superagent : { post }
     \./utils/wrong-string.ls
     \./utils/get-web3.ls
     \./add-peer.ls
@@ -16,8 +16,8 @@ try-connect-peer = (me, peer, cb)->
     add-me-signature = web3.eth.accounts.sign("Velas peer request, My address is #{network-address}", me.account, no).signature
     method = \addPeer
     params = { network-address, owner, add-me-signature }
-    err, res <- post peer, { method, params }
-    return add-me-to-network me, res.body, cb if err? and err.body.error.message is 'There are not available slots, please get one of child peer' and typeof! res.body is \Array
+    err, res <- post(peer, { method, params }).timeout({ deadline: 1000 }).end
+    return add-me-to-network me, res.body, cb if err? and err.body?error?message is 'There are not available slots, please get one of child peer' and typeof! res.body is \Array
     return cb err if err?
     return cb res.body.error.message if res.body?error?
     score = \0
@@ -43,14 +43,16 @@ add-me-to-network = (db, me, [peer, ...peers], cb)->
     all = [remote-peer] ++ remote-peers
     cb null, all
 
-add-peers = (db, me, [remote-peer, ...remote-peers], cb)->
+add-peers = (state, [remote-peer, ...remote-peers], cb)->
     return cb null if not remote-peer?
-    err, data <- add-peer db, me, remote-peer
+    err, data <- add-peer state, remote-peer
     return cb err if err?
     <- set-immediate
-    add-peers db, me, remote-peers, cb
+    add-peers state, remote-peers, cb
 
-become-peer = (db, me, cb)->
+become-peer = (state, cb)->
+    db = state.blockchain.data
+    me = state.options
     err <- already-connected db
     return cb null if err is "Already connected some peers"
     return cb "Expected array of discovery-peers" if typeof! me.discovery-peers isnt \Array
@@ -59,7 +61,7 @@ become-peer = (db, me, cb)->
     return cb err if err?
     
     #console.log remote-peers
-    err, data <- add-peers db, me, remote-peers
+    err, data <- add-peers state, remote-peers
     return cb err if err?
     cb null
     

@@ -48,6 +48,7 @@
     "random-sort": "^2.6.9",
     "seedrandom": "3.0.1",
     "source-map-support": "0.5.12",
+    "superagent": "^5.2.1",
     "tmp": "0.1.0",
     "web3-provider-engine": "14.2.1",
     "websocket": "1.0.29"

@@ -13,7 +13,7 @@ test-each-node = (genesis, [node, ...nodes], cb)->
     #account = web3.eth.accounts.privateKeyToAccount(node.account)
     #address = account.address
     
-    web3 = get-web3 node
+    web3 = get-web3 node.config
     
     address = web3.eth.accounts.wallet.0.address
     
@@ -24,8 +24,10 @@ test-each-node = (genesis, [node, ...nodes], cb)->
     err <- web3.eth.send-transaction { from: address, to: '0xd18D7B149850D0Ca719B20592Cd1E022c502DBC6', value: '100000000000000000', gas: '50000', gas-price: '500'  }
     return cb err if err?
     
+    #console.log node.blockchain
+    
     #me = { network-address: "", owner: "", add-me-signature: "" }
-    #err, data <- post "http://localhost:#{node.port}", { method: "addPeer", params: me }
+    #err, data <- post "http://localhost:#{node.config.port}", { method: "addPeer", params: me }
     #return cb err if err?
     #return cb data.body.error.message if data.body.error?
     

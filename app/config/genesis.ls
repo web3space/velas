@@ -12,6 +12,7 @@ module.exports =
         generator |> map build-account
     locked: yes
     network_id: 1
+    asyncRequestProcessing: yes
     govermance:
         stake:
             min-stake: 50 * (10^18)

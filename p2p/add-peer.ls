@@ -10,7 +10,7 @@ get-validated-peer = (me, peer, cb)->
     return cb "expected correct peer.network-address" if wrong-string peer.network-address, 50
     return cb "expected correct peer.owner got #{peer.owner}" if wrong-string peer.owner, 50
     return cb "expected correct peer.add-me-signature" if wrong-string peer.add-me-signature, 500
-    
+    return cb "cannot add self" if peer.network-address is "http://#{me.ip}:#{me.port}"
     err, owner <- recover-owner me, "Velas peer request, My address is #{peer.network-address}", peer.add-me-signature
     return cb err if err?
     
@@ -37,7 +37,9 @@ return-peers = (db, length, cb)->
     return cb err if err?
     cb "There are not available slots, please get one of child peer", peers
 
-add-peer = (db, me, peer, cb)->
+add-peer = (state, peer, cb)->
+    db = state.blockchain.data
+    me = state.options
     err, length <- db.peers.length
     return return-peers db, length, cb if length >= 50
     err, peer <- get-validated-peer me, peer
