@@ -28,25 +28,38 @@ try-connect-peer = (me, peer, cb)->
 already-connected = (db, cb)->
     err, length <- db.peers.length
     return cb err if err?
-    return cb "already connected" if length > 0
+    return cb "Already connected some peers" if length > 0
     cb null
 
 add-me-to-network = (db, me, [peer, ...peers], cb)->
-    return cb "Cannot find available peer for connection" if not peer?
-    err <- already-connected db
-    return cb err if err?
+    return cb null if not peer?
+    #return cb "Cannot find available peer for connection" if not peer?
+    #err <- already-connected db
+    #return cb err if err?
     err, remote-peer <- try-connect-peer me, peer
     <- set-immediate
-    return add-me-to-network db, me, peers, cb if err?
-    cb null, remote-peer
+    err, remote-peers <- add-me-to-network db, me, peers
+    return cb err if err?
+    all = [remote-peer] ++ remote-peers
+    cb null, all
+
+add-peers = (db, me, [remote-peer, ...remote-peers], cb)->
+    return cb null if not remote-peer?
+    err, data <- add-peer db, me, remote-peer
+    return cb err if err?
+    <- set-immediate
+    add-peers db, me, remote-peers, cb
 
 become-peer = (db, me, cb)->
     err <- already-connected db
-    return cb null if err is "already connected"
-    return cb "expected array of discovery-peers" if typeof! me.discovery-peers isnt \Array
-    err, remote-peer <- add-me-to-network db, me, me.discovery-peers
+    return cb null if err is "Already connected some peers"
+    return cb "Expected array of discovery-peers" if typeof! me.discovery-peers isnt \Array
+    return cb "Cannot find available peers for connection" if me.discovery-peers.length is 0
+    err, remote-peers <- add-me-to-network db, me, me.discovery-peers
     return cb err if err?
-    err, data <- add-peer db, me, remote-peer
+    
+    #console.log remote-peers
+    err, data <- add-peers db, me, remote-peers
     return cb err if err?
     cb null
     

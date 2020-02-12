@@ -1,13 +1,14 @@
 require! {
     \./generator.ls
     \prelude-ls : { foldl, filter, each, map }
+    \./config.ls : { ip }
 }
 
 
 build-node = (collector, account)->
         item =
                 port: 9000 + collector.length + 1
-                ip: \107.191.100.236
+                ip: ip
                 account: account
                 stacker: yes
                 discovery-peers: []

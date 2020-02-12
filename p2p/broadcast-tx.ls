@@ -51,7 +51,7 @@ broadcast-tx = (db, tx, cb)->
     random-indexes = 
         | length is 1 => [0]
         | _ => [0 to last]
-    console.log \broadcast-tx, 7, tx, 2, [], random-indexes
+    #console.log \broadcast-tx, 7, tx, 2, [], random-indexes
     # TODO: replace with pure function
     random-sort random-indexes
     err, score-result <- inform-peers db, tx, 2, [], random-indexes
